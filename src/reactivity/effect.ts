@@ -3,7 +3,7 @@ import { extend } from "../shared";
 let activeEffect;
 let shouldTrack;
 
-class ReactiveEffect {
+export class ReactiveEffect {
   private _fn: any;
   public scheduler: any;
   deps = [];
@@ -94,10 +94,13 @@ export function track(target, key) {
     deps = new Set();
     depsMap.set(key, deps);
   }
+  trackEffects(deps);
+}
 
+export function trackEffects(deps) {
   // 只有使用effect注册副作用函数时，从 effect.run() 中进入，才能够向下执行
   if (deps.has(activeEffect)) return;
-  
+
   deps.add(activeEffect);
   activeEffect.deps.push(deps);
 }
@@ -106,7 +109,7 @@ export function track(target, key) {
  * @description 判断是否是 通过 effect 注册函数触发响应式对象的 get 拦截函数，触发track。
  */
 
-function isTracking() {
+export function isTracking() {
   // 如果没有正在执行的函数，return
   // 通过 obj.foo++ 这样的操作进入 get 拦截函数，触发track
   // 如果不是从 effect.run() 中进入，return
@@ -116,6 +119,10 @@ function isTracking() {
 export function trigger(target, key) {
   const depsMap = targetMap.get(target);
   const deps = depsMap.get(key);
+  triggerEffects(deps);
+}
+
+export function triggerEffects(deps) {
   for (const effect of deps) {
     if (effect.scheduler) {
       effect.scheduler();
