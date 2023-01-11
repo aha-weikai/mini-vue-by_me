@@ -13,6 +13,6 @@ export const Foo = {
     // 1. 获取到要渲染的元素
     // 2. 获取到渲染的位置
 
-    return h("div", {}, [foo, renderSlots(this.$slots)]);
+    return h("div", {}, [renderSlots(this.$slots, "header"), foo, renderSlots(this.$slots, "footer")]);
   },
 };

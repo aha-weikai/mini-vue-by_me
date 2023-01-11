@@ -4,7 +4,15 @@ import { Foo } from "./Foo.js";
 export const App = {
   name: "App",
   render() {
-    return h("div", {}, [h("p", {}, "hi," + this.msg), h(Foo, {}, [h("p", {}, "123")])]);
+    const foo = h(
+      Foo,
+      {},
+      {
+        header: h("p", {}, "123"),
+        footer: h("p", {}, "456"),
+      }
+    );
+    return h("div", {}, [h("p", {}, "hi," + this.msg), foo]);
   },
 
   setup() {
