@@ -94,11 +94,11 @@ export function createRenderer(options) {
       mountElement(n2, container, parentComponent, anchor);
     } else {
       // update
-      patchElement(n1, n2, parentComponent, patchChildren, anchor);
+      patchElement(n1, n2, parentComponent, parentComponent, anchor);
     }
   }
 
-  function patchElement(n1, n2, container, patchChildren, anchor) {
+  function patchElement(n1, n2, container, parentComponent, anchor) {
     console.log("patchElement");
     console.log("n1", n1);
     console.log("n2", n2);
@@ -113,10 +113,10 @@ export function createRenderer(options) {
     // 所以 需要为 n2.el 赋值
     patchProps(el, oldProps, newProps);
     // children
-    patchChildren(n1, n2, el, patchChildren, anchor);
+    patchChildren(n1, n2, el, parentComponent, anchor);
   }
 
-  function patchChildren(n1, n2, container, patchChildren, anchor) {
+  function patchChildren(n1, n2, container, parentComponent, anchor) {
     const { shapeFlag } = n2;
     const prevShapeFlag = n1.shapeFlag;
     const c2 = n2.children;
@@ -134,10 +134,10 @@ export function createRenderer(options) {
       // new is array
       if (prevShapeFlag & ShapeFlags.TEXT_CHILDREN) {
         hostSetElementText(container, "");
-        mountChildren(c2, container, patchChildren, anchor);
+        mountChildren(c2, container, parentComponent, anchor);
       } else {
         // array to array
-        patchKeyedChildren(c1, c2, container, patchChildren, anchor);
+        patchKeyedChildren(c1, c2, container, parentComponent, anchor);
       }
     }
   }
@@ -192,6 +192,45 @@ export function createRenderer(options) {
       }
     } else {
       // 乱序
+      // 中间对比
+      let s1 = i; // 老节点的乱序的开始
+      let s2 = i; // 新节点的乱序的开始
+      const toBePatched = e2 - s2 + 1; // 新的节点中需要更新的数量
+      let patched = 0; // 已经处理的节点数量
+
+      const keyToNewIndexMap = new Map();
+
+      for (let i = s2; i <= e2; i++) {
+        const nextChild = c2[i];
+        keyToNewIndexMap.set(nextChild.key, i);
+      }
+      for (let i = s1; i <= e1; i++) {
+        const prevChild = c1[i];
+
+        // 已经处理的节点数量 >= 需要处理的节点数量
+        if (patched >= toBePatched) {
+          hostRemove(prevChild.el);
+          continue;
+        }
+
+        let newIndex;
+        if (prevChild.key !== null && prevChild !== undefined) {
+          newIndex = keyToNewIndexMap.get(prevChild.key);
+        } else {
+          for (let j = s2; j < e2; j++) {
+            if (isSameVNodeType(prevChild, c2[j])) {
+              newIndex = j;
+              break;
+            }
+          }
+        }
+        if (newIndex === undefined) {
+          hostRemove(prevChild.el);
+        } else {
+          patch(prevChild, c2[newIndex], container, parentComponent, null);
+          patched++;
+        }
+      }
     }
   }
 

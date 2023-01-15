@@ -45,16 +45,16 @@ import { h, ref } from "../../lib/guide-mini-vue.esm.js";
 // 右侧
 // (a b)
 // c (a b)
-const prevChildren = [
-  h("div", { key: "A" }, "A"), //
-  h("div", { key: "B" }, "B"),
-];
-const nextChildren = [
-  h("div", { key: "D" }, "D"),
-  h("div", { key: "C" }, "C"),
-  h("div", { key: "A" }, "A"), //
-  h("div", { key: "B" }, "B"),
-];
+// const prevChildren = [
+//   h("div", { key: "A" }, "A"), //
+//   h("div", { key: "B" }, "B"),
+// ];
+// const nextChildren = [
+//   h("div", { key: "D" }, "D"),
+//   h("div", { key: "C" }, "C"),
+//   h("div", { key: "A" }, "A"), //
+//   h("div", { key: "B" }, "B"),
+// ];
 
 // 4. 老的比新的长
 // 左侧
@@ -81,6 +81,48 @@ const nextChildren = [
 //   h("div", { key: "B" }, "B"),
 //   h("div", { key: "C" }, "C"),
 // ];
+
+// 5. 对比中间的部分
+// 删除老的 (在老的里面存在，新的里面不存在)
+// 5.1
+// a,b,(c,d),f,g
+// a,b,(e,c),f,g
+// const prevChildren = [
+//   h("div", { key: "A" }, "A"), //
+//   h("div", { key: "B" }, "B"),
+//   h("div", { key: "C", id: "c-prev" }, "C"),
+//   h("div", { key: "D" }, "D"),
+//   h("div", { key: "F" }, "F"),
+//   h("div", { key: "G" }, "G"),
+// ];
+// const nextChildren = [
+//   h("div", { key: "A" }, "A"),
+//   h("div", { key: "B" }, "B"), //
+//   h("div", { key: "E" }, "E"),
+//   h("div", { key: "C", id: "c-next" }, "C"),
+//   h("div", { key: "F" }, "F"),
+//   h("div", { key: "G" }, "G"),
+// ];
+// 5.1.1
+// a,b,(c,e,d),f,g
+// a,b,(e,c),f,g
+const prevChildren = [
+  h("div", { key: "A" }, "A"), //
+  h("div", { key: "B" }, "B"),
+  h("div", { key: "C", id: "c-prev" }, "C"),
+  h("div", { key: "E" }, "E"),
+  h("div", { key: "D" }, "D"),
+  h("div", { key: "F" }, "F"),
+  h("div", { key: "G" }, "G"),
+];
+const nextChildren = [
+  h("div", { key: "A" }, "A"),
+  h("div", { key: "B" }, "B"), //
+  h("div", { key: "E" }, "E"),
+  h("div", { key: "C", id: "c-next" }, "C"),
+  h("div", { key: "F" }, "F"),
+  h("div", { key: "G" }, "G"),
+];
 
 export default {
   name: "ArrayToText",
