@@ -106,22 +106,81 @@ import { h, ref } from "../../lib/guide-mini-vue.esm.js";
 // 5.1.1
 // a,b,(c,e,d),f,g
 // a,b,(e,c),f,g
+// const prevChildren = [
+//   h("div", { key: "A" }, "A"), //
+//   h("div", { key: "B" }, "B"),
+//   h("div", { key: "C", id: "c-prev" }, "C"),
+//   h("div", { key: "E" }, "E"),
+//   h("div", { key: "D" }, "D"),
+//   h("div", { key: "F" }, "F"),
+//   h("div", { key: "G" }, "G"),
+// ];
+// const nextChildren = [
+//   h("div", { key: "A" }, "A"),
+//   h("div", { key: "B" }, "B"), //
+//   h("div", { key: "E" }, "E"),
+//   h("div", { key: "C", id: "c-next" }, "C"),
+//   h("div", { key: "F" }, "F"),
+//   h("div", { key: "G" }, "G"),
+// ];
+
+// 3. 创建新的节点
+// a,b,(c,e),f,g
+// a,b,(e,c,d),f,g
+// const prevChildren = [
+//   h("div", { key: "A" }, "A"), //
+//   h("div", { key: "B" }, "B"),
+//   h("div", { key: "C", id: "c-prev" }, "C"),
+//   h("div", { key: "E" }, "E"),
+//   h("div", { key: "F" }, "F"),
+//   h("div", { key: "G" }, "G"),
+// ];
+// const nextChildren = [
+//   h("div", { key: "A" }, "A"),
+//   h("div", { key: "B" }, "B"), //
+//   h("div", { key: "E" }, "E"),
+//   h("div", { key: "C", id: "c-next" }, "C"),
+//   h("div", { key: "D" }, "D"),
+//   h("div", { key: "F" }, "F"),
+//   h("div", { key: "G" }, "G"),
+// ];
+
+// 综合例子
+// a,b,(c,d,e,z),f,g
+// a,b,(d,c,y,e),f,g
+// const prevChildren = [
+//   h("div", { key: "A" }, "A"), //
+//   h("div", { key: "B" }, "B"),
+//   h("div", { key: "C", id: "c-prev" }, "C"),
+//   h("div", { key: "D" }, "D"),
+//   h("div", { key: "E" }, "E"),
+//   h("div", { key: "Z" }, "Z"),
+//   h("div", { key: "F" }, "F"),
+//   h("div", { key: "G" }, "G"),
+// ];
+// const nextChildren = [
+//   h("div", { key: "A" }, "A"),
+//   h("div", { key: "B" }, "B"), //
+//   h("div", { key: "D" }, "D"),
+//   h("div", { key: "C", id: "c-next" }, "C"),
+//   h("div", { key: "Y" }, "Y"),
+//   h("div", { key: "E" }, "E"),
+//   h("div", { key: "F" }, "F"),
+//   h("div", { key: "G" }, "G"),
+// ];
+
+// fix
 const prevChildren = [
   h("div", { key: "A" }, "A"), //
+  h("div", { id: "c-prev" }, "C"),
   h("div", { key: "B" }, "B"),
-  h("div", { key: "C", id: "c-prev" }, "C"),
-  h("div", { key: "E" }, "E"),
   h("div", { key: "D" }, "D"),
-  h("div", { key: "F" }, "F"),
-  h("div", { key: "G" }, "G"),
 ];
 const nextChildren = [
   h("div", { key: "A" }, "A"),
   h("div", { key: "B" }, "B"), //
-  h("div", { key: "E" }, "E"),
-  h("div", { key: "C", id: "c-next" }, "C"),
-  h("div", { key: "F" }, "F"),
-  h("div", { key: "G" }, "G"),
+  h("div", { id: "c-next" }, "C"),
+  h("div", { key: "D" }, "D"),
 ];
 
 export default {

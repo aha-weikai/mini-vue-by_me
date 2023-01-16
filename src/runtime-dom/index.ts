@@ -18,9 +18,9 @@ function patchProp(el: HTMLElement, key, prevVal, nextVal) {
   }
 }
 
-function insert(child, parent, anchor) {
+function insert(child, parent, anchor = null) {
   // parent.append(el);
-  parent.insertBefore(child, anchor || null);
+  parent.insertBefore(child, anchor);
 }
 
 function remove(child) {
