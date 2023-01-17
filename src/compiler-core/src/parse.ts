@@ -8,31 +8,62 @@ const enum TagType {
 export function baseParse(content: string) {
   const context = createParseContext(content);
 
-  return createRoot(parseChildren(context));
+  return createRoot(parseChildren(context, []));
 }
 
-function parseChildren(context) {
-  let node;
-  let s = context.source;
-  if (s.startsWith("{{")) {
-    node = parseInterpolation(context);
-  } else if (s[0] === "<") {
-    if (/[a-z]/i.test(s[1])) {
-      node = parseElement(context);
-    }
-  }
-
-  if (!node) {
-    node = parseText(context);
-  }
-
+function parseChildren(context, ancestor) {
   const nodes: any = [];
-  nodes.push(node);
+
+  while (!isEnd(context, ancestor)) {
+    let node;
+    let s = context.source;
+    if (s.startsWith("{{")) {
+      node = parseInterpolation(context);
+    } else if (s[0] === "<") {
+      if (/[a-z]/i.test(s[1])) {
+        node = parseElement(context, ancestor);
+      }
+    }
+
+    if (!node) {
+      node = parseText(context);
+    }
+    nodes.push(node);
+  }
   return nodes;
 }
 
+function isEnd(context, ancestor) {
+  // 当遇到结束标签的时候
+  const s = context.source;
+  if (s.startsWith("</")) {
+    for (let i = ancestor.length - 1; i >= 0; i--) {
+      const tag = ancestor[i];
+      if (startsWithTagOpen(s, tag)) {
+        return true;
+      }
+    }
+  }
+  // source 有值
+  return !context.source;
+}
+
 function parseText(context) {
-  const content = parseTextData(context, context.source.length);
+  let endIndex = context.source.length;
+  const endToken = ["<", "{{"];
+
+  for (const token of endToken) {
+    const index = context.source.indexOf(token);
+    if (index !== -1 && endIndex > index) {
+      endIndex = index;
+    }
+  }
+
+  const index = context.source.indexOf(endToken);
+  if (index !== -1) {
+    endIndex = index;
+  }
+  const content = parseTextData(context, endIndex);
 
   return {
     type: NodeTypes.TEXT,
@@ -43,21 +74,33 @@ function parseText(context) {
 function parseTextData(context, length) {
   const content = context.source.slice(0, length);
 
-  advanceBy(context, content.length);
+  advanceBy(context, length);
   return content;
 }
 
-function parseElement(context) {
+function parseElement(context, ancestor) {
   // 解析tag
+  const element: any = parseTag(context, TagType.Start);
+  ancestor.push(element.tag);
+  element.children = parseChildren(context, ancestor);
+  ancestor.pop();
 
-  const element = parseTag(context, TagType.Start);
-  parseTag(context, TagType.End);
+  if (startsWithTagOpen(context.source, element.tag)) {
+    parseTag(context, TagType.End);
+  } else {
+    throw new Error(`缺少结束标签:${element.tag}`);
+  }
 
   return element;
 }
 
+function startsWithTagOpen(source, tag) {
+  return source.startsWith("</") && source.slice(2, 2 + tag.length).toLowerCase() === tag.toLowerCase();
+}
+
 function parseTag(context: any, type: TagType) {
   const match: any = /^<\/?([a-z]*)/i.exec(context.source);
+  console.log(match);
   const tag = match[1];
 
   // 推荐字节流
