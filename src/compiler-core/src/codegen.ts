@@ -1,5 +1,6 @@
+import { isString } from "../../shared";
 import { NodeTypes } from "./ast";
-import { helperMapName, TO_DISPLAY_STRING } from "./runtimeHelpers";
+import { CREATE_ELEMENT_VNODE, helperMapName, TO_DISPLAY_STRING } from "./runtimeHelpers";
 
 export function generate(ast) {
   const context = createCodegenContext();
@@ -33,7 +34,6 @@ function genFunctionPreamble(ast, context) {
 }
 
 function genNode(node, context) {
-  const { push } = context;
   switch (node.type) {
     case NodeTypes.TEXT:
       genText(node, context);
@@ -44,9 +44,64 @@ function genNode(node, context) {
     case NodeTypes.SIMPLE_EXPRESSION:
       genExpression(node, context);
       break;
+    case NodeTypes.ELEMENT:
+      genElement(node, context);
+      break;
+    case NodeTypes.COMPOUND_EXPRESSION:
+      genCompoundExpression(node, context);
+      break;
     default:
       break;
   }
+}
+
+function genCompoundExpression(node, context) {
+  const { children } = node;
+  const { push } = context;
+  for (let i = 0; i < children.length; i++) {
+    const child = children[i];
+    if (isString(child)) {
+      push(child);
+    } else {
+      genNode(child, context);
+    }
+  }
+}
+
+function genElement(node, context) {
+  const { push, helper } = context;
+  const { tag, children, props } = node;
+
+  // return function render(_ctx, _cache){return _createElementVNode('div',null,"hi,"+_toDisplayString(_ctx.message))}
+  push(`${helper(CREATE_ELEMENT_VNODE)}(`);
+
+  // genNode(children, context);
+  genNodeList(genNullable([tag, props, children]), context);
+  // for (let i = 0; i < children.length; i++) {
+  //   const child = children[i];
+  //   genNode(child, context);
+  // }
+  console.log(context.source);
+  push(")");
+}
+
+function genNodeList(nodes, context) {
+  const { push } = context;
+  for (let i = 0; i < nodes.length; i++) {
+    const node = nodes[i];
+    if (isString(node)) {
+      push(node);
+    } else {
+      genNode(node, context);
+    }
+    if (i < nodes.length - 1) {
+      push(",");
+    }
+  }
+}
+
+function genNullable(args) {
+  return args.map((arg) => arg || "null");
 }
 
 function genText(node, context) {
@@ -60,7 +115,7 @@ function createCodegenContext() {
       context.code += source;
     },
     helper(key) {
-      return `${helperMapName[key]}`;
+      return `_${helperMapName[key]}`;
     },
   };
   return context;
@@ -68,7 +123,7 @@ function createCodegenContext() {
 
 function genInterpolation(node: any, context: any) {
   const { push, helper } = context;
-  push(`_${helper(TO_DISPLAY_STRING)}(`);
+  push(`${helper(TO_DISPLAY_STRING)}(`);
   genNode(node.content, context);
   push(")");
 }

@@ -100,7 +100,6 @@ function startsWithTagOpen(source, tag) {
 
 function parseTag(context: any, type: TagType) {
   const match: any = /^<\/?([a-z]*)/i.exec(context.source);
-  console.log(match);
   const tag = match[1];
 
   // 推荐字节流
