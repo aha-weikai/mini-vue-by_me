@@ -6,11 +6,12 @@ export function transform(root, options = {}) {
   // 1. 遍历 - 深度优先搜索
   traverseNode(root, context);
 
-  // 2. 修改 text content
+  // root.codegenNode
+  createRootCodegen(root);
 }
 function traverseNode(node: any, context) {
   console.log(node);
-  const nodeTransforms = context.nodeTransforms;
+  const nodeTransforms = context?.nodeTransforms || [];
 
   for (const transform of nodeTransforms) {
     transform(node);
@@ -21,7 +22,7 @@ function traverseNode(node: any, context) {
 function createTransformContext(root: any, options: any) {
   const context = {
     root,
-    nodeTransforms: options?.nodeTransforms || {},
+    nodeTransforms: options?.nodeTransforms || [],
   };
   return context;
 }
@@ -35,4 +36,7 @@ function traverseChildren(node, context) {
       traverseNode(node, context);
     }
   }
+}
+function createRootCodegen(root: any) {
+  root.codegenNode = root.children[0];
 }
